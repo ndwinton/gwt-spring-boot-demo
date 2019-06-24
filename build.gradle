@@ -23,11 +23,14 @@ dependencies {
     compile "com.google.gwt:gwt-user:$gwtVersionNo"
     compile "com.google.gwt:gwt-dev:$gwtVersionNo"
 
-    compile "org.springframework.boot:spring-boot-starter-web"
-    
-    implementation "javax.ws.rs:javax.ws.rs-api:2.0.1"
-    compileOnly "org.fusesource.restygwt:restygwt:2.2.0"
-    implementation "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.8.9"
+    compile("org.springframework.boot:spring-boot-starter-web") {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'
+    }
+    compile("org.springframework.boot:spring-boot-starter-jetty")
+
+//    implementation "javax.ws.rs:javax.ws.rs-api:2.0.1"
+//    compileOnly "org.fusesource.restygwt:restygwt:2.2.0"
+//    implementation "com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.8.9"
 }
 
 group = 'io.pivotal.demo'
@@ -45,4 +48,18 @@ gwt {
     //module("org.example.gwt.StockWatcher2", "de.richsource.gradle.plugins.gwt.example.Example")
     module("io.pivotal.demo.GwtDemo")
     // other configuration options
+}
+
+task copyGWTCode(dependsOn: ["gwtCompile"], type: Copy) {
+    from file("${buildDir}/gwt/out")
+    into file("${buildDir}/resources/main/static")
+}
+
+bootJar {
+    dependsOn copyGWTCode
+    doLast {
+        mkdir "${buildDir}/target"
+        setDestinationDir(file("${buildDir}/target"))
+        copy()
+    }
 }
